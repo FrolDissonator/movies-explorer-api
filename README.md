@@ -11,7 +11,7 @@
 
 ## Ссылки на проект
 
-IP 84.201.137.207
+IP 51.250.27.38
 
 https://api.movies.dissonator.nomoredomainsrocks.ru
 
