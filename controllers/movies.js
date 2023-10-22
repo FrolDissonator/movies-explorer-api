@@ -1,13 +1,17 @@
 /* eslint-disable no-underscore-dangle */
 const Movie = require('../models/movie');
+const ApiError = require('../errors/ApiError');
 
-module.exports.getMovies = (req, res, next) => {
-  Movie.find({ owner: req.user._id })
-    .then((movies) => res.send(movies))
-    .catch(next);
+module.exports.getMovies = async (req, res, next) => {
+  try {
+    const movies = await Movie.find({ owner: req.user._id });
+    res.status(200).send(movies);
+  } catch (err) {
+    next(ApiError.internal('Ошибка сервера'));
+  }
 };
 
-module.exports.createMovie = (req, res, next) => {
+module.exports.createMovie = async (req, res, next) => {
   const {
     country,
     director,
@@ -15,40 +19,59 @@ module.exports.createMovie = (req, res, next) => {
     year,
     description,
     image,
-    trailer,
-    nameRU,
-    nameEN,
+    trailerLink,
     thumbnail,
     movieId,
+    nameRU,
+    nameEN,
   } = req.body;
 
   const owner = req.user._id;
 
-  Movie.create({
-    country,
-    director,
-    duration,
-    year,
-    description,
-    image,
-    trailer,
-    nameRU,
-    nameEN,
-    thumbnail,
-    movieId,
-    owner,
-  })
-    .then((movie) => res.send(movie))
-    .catch(next);
+  try {
+    const movie = await Movie.create({
+      country,
+      director,
+      duration,
+      year,
+      description,
+      image,
+      trailerLink,
+      thumbnail,
+      movieId,
+      nameRU,
+      nameEN,
+      owner,
+    });
+
+    res.send(movie);
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      next(ApiError.badRequest('Ошибка валидации'));
+    } else {
+      next(ApiError.internal('Ошибка сервера'));
+    }
+  }
 };
 
-module.exports.deleteMovie = (req, res, next) => {
-  Movie.findByIdAndDelete(req.params.id)
-    .then((movie) => {
-      if (!movie) {
-        throw new Error('Фильм не найден');
-      }
-      res.send({ message: 'Фильм удалён' });
-    })
-    .catch(next);
+// eslint-disable-next-line consistent-return
+module.exports.deleteMovie = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+    const movie = await Movie.findById(id);
+
+    if (!movie) {
+      return next(ApiError.notFound('Фильм не найден'));
+    }
+    if (movie.owner.toString() !== userId) {
+      return next(ApiError.forbidden('Вы не можете удалить этот фильм'));
+    }
+
+    const deletedMovie = await Movie.deleteOne(movie);
+
+    res.status(200).send({ data: deletedMovie });
+  } catch (err) {
+    next(ApiError.internal('Ошибка сервера'));
+  }
 };
