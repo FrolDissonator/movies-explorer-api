@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
@@ -78,6 +77,9 @@ module.exports.updateProfile = async (req, res, next) => {
   } catch (err) {
     if (err.name === 'ValidationError') {
       return next(ApiError.badRequest('Ошибка валидации'));
+    }
+    if (err.code === 11000) {
+      return next(ApiError.alreadyExists('Пользователь с таким email уже существует'));
     }
     return next(ApiError.internal('Ошибка сервера'));
   }

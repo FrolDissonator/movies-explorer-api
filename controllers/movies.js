@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 const Movie = require('../models/movie');
 const ApiError = require('../errors/ApiError');
 
