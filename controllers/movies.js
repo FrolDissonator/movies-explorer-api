@@ -53,7 +53,6 @@ module.exports.createMovie = async (req, res, next) => {
   }
 };
 
-// eslint-disable-next-line consistent-return
 module.exports.deleteMovie = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -69,8 +68,8 @@ module.exports.deleteMovie = async (req, res, next) => {
 
     const deletedMovie = await Movie.deleteOne(movie);
 
-    res.status(200).send({ data: deletedMovie });
+    return res.status(200).send({ data: deletedMovie });
   } catch (err) {
-    next(ApiError.internal('Ошибка сервера'));
+    return next(ApiError.internal('Ошибка сервера'));
   }
 };
