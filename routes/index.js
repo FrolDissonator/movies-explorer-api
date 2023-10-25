@@ -9,8 +9,6 @@ const { login, createUser } = require('../controllers/users');
 router.post('/signin', loginValidation, login);
 router.post('/signup', createUserValidation, createUser);
 
-router.use(require('../middlewares/auth'));
-
 router.use(auth);
 router.use('/users', require('./users'));
 router.use('/movies', require('./movies'));
